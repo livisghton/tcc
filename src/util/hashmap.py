@@ -1,5 +1,9 @@
 #Codigo extraido do stackoverflow
 #https://stackoverflow.com/questions/8703496/hash-map-in-python
+"""
+Este pacote implementa um hashmap, onde tem por definicao key, value
+"""
+
 
 class Node:
     "Cria uma instancia de Hash"

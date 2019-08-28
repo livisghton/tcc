@@ -1,5 +1,6 @@
 from pydub import AudioSegment
 import glob, os
+import util.hashmap
 
 #https://gist.github.com/gchavez2/53148cdf7490ad62699385791816b1ea
 #https://ieeexplore.ieee.org/document/4564924   (artigo interessante)
