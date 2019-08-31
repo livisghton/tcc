@@ -2,16 +2,17 @@ from pydub import AudioSegment
 import glob, os
 import util.hashmap as hashMap
 import numpy as np
-#from scipy import signal
 import scipy.io.wavfile as wav
 import matplotlib.pyplot as plt
-import scipy.signal as stft
+from scipy.signal import stft
 
 
 #https://gist.github.com/gchavez2/53148cdf7490ad62699385791816b1ea
 #https://ieeexplore.ieee.org/document/4564924   (artigo interessante)
 #https://kevinsprojects.wordpress.com/2014/12/13/short-time-fourier-transform-using-python-and-numpy/    (site legal sobre stft)
 #https://musicinformationretrieval.com/stft.html
+#https://www.mathworks.com/matlabcentral/fileexchange/45197-short-time-fourier-transform-stft-with-matlab   em matlab
+
 
 def fileAccount(directory, format):
     """Contabiliza a quantiade de musicas no formato mp3 dentro de um diretorio.
@@ -114,29 +115,24 @@ def spectrumGeneration(wavFiles, windows, lengthWindows, jumpWindows):
 
     i = 0
     while(i < len(names)):
-        #name = names[i].split("_")
+        name = names[i].split(".")
         samplerate, samples = wav.read(wavFiles + names[i])
-        if(i == 5):
-           #print(samples)
-            #f, t, Zxx = stft.stft(samples[0], samplerate, windows)
-            f, t, Zxx = stft.stft(samples[0])
-            print(Zxx)
-            #plt.imshow(float(Zxx))
-            #plt.ylabel('Frequency [Hz]')
-            #plt.xlabel('Time [sec]')
-            #plt.show()
+        #if(i == 65):
+        samples0 = samples[:, 0]
+        X, T, Zxx = stft(samples0, samplerate, windows, 20)
+        #X = stft(samples, samplerate, windows)
+        plt.pcolormesh(T, X, np.abs(Zxx), vmin=0)
+        #plt.imshow(np.abs(Zxx))
+        plt.title('STFT Magnitude')
+        plt.ylabel('Frequency [Hz]')
+        plt.xlabel('Time [sec]')
+        fig = plt.gcf()
+        #plt.show()
+        fig.savefig('dataset/spectrum/' + name[0] +'.png', format='png')
         
         i = i + 1
 
-"""
-def spectrumAnalyzer(fs, data):
-    frequencies, times, spectrogram = signal.spectrogram(data, fs)
-    plt.pcolormesh(times, frequencies, spectrogram)
-    plt.imshow(spectrogram)
-    plt.ylabel('Frequency [Hz]')
-    plt.xlabel('Time [sec]')
-    #plt.show()
-    plt.savefig('spectrumCar1.png', format='png')"""
+
 
 
 def main():
@@ -148,14 +144,14 @@ def main():
     wavFiles = "dataset/extract_wav/"
 
     #variaveis de entrada
-    windows = np.blackman(256)
+    windows = 'blackman'
     lengthWindows = 1000        #tamanho da janela em milessegundos
-    jumpWindows = 200         #salto da janela em milessegundos
-
+    hopWindows = 200         #salto da janela em milessegundos
+    
 
     wavGenerete(mp3Files, wavFiles, chordsFiles)
 
-    spectrumGeneration(wavFiles, windows, lengthWindows, jumpWindows)
+    spectrumGeneration(wavFiles, windows, lengthWindows, hopWindows)
     
     
     """
