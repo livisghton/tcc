@@ -5,6 +5,7 @@ import numpy as np
 import scipy.io.wavfile as wav
 import matplotlib.pyplot as plt
 from scipy.signal import stft
+from math import floor
 
 
 #https://gist.github.com/gchavez2/53148cdf7490ad62699385791816b1ea
@@ -105,43 +106,51 @@ def spectrumGeneration(wavFiles, windows, lengthWindows, jumpWindows):
     Gera o espectro de todos os arquivos no diretorio com a configuracao passada.
     \t-wavFiles: diretorio com os arquivos no formato .wav;
     \t-windows: tipo de janela
-    \t-lengthWindows: tamanho da janela em milessegundos
-    \t-jumpWindows: salto da janela em milessegundos
+    \t-lengthWindows: tamanho da janela em seg
+    \t-jumpWindows: salto da janela em seg
     """
     actualDirectory = os.getcwd()        #Salva a posicao do diretorio atual
     names = fileNames(wavFiles)      #contabiliza a quantidade de arquivos wav na pasta extract_wav
     os.chdir(actualDirectory)       #retorna para o diretorio inicial
 
-
+    hmImg = hashMap.HashMap()
+    
     i = 0
     while(i < len(names)):
         name = names[i].split(".")
+        chord = name[0].split("_")[0]
         samplerate, samples = wav.read(wavFiles + names[i])     #samplerate tempo de amostragem para 1 seg
 
-        if(i == 1):
-            samples0 = samples[:, 0]        #pega o primeiro canal ou converte de sterio para mono
-            print(samplerate)
-            print(len(samples0))
-            winStart = 0
-            winEnd = samplerate
-            jump = 2000           #salto de 0.2 seg TODO: valor a ser estudado
-            while(winEnd < len(samples0)):
+        #if(i == 1):
+        samples0 = samples[:, 0]        #pega o primeiro canal ou converte de sterio para mono
+        winStart = 0
+        winEnd = int((samplerate * lengthWindows)/1000)
+        jump = floor((samplerate * jumpWindows)/1000)
+        while(winEnd <= len(samples0)):
             
-                samp = samples0[winStart:winEnd]
-                #print(samp)
-                X, T, Zxx = stft(samp, samplerate, windows, 20)
+            if(not hmImg.get(chord)):          #Verifica se ja existe o acorde chord
+                hmImg.put(chord, 1)            #Cria uma nova chave
+            else:
+                k = hmImg.get(chord)
+                k = k + 1
+                hmImg.put(chord, k)            #atualiza a hash
+            
 
-                winStart += jump
-                winEnd += jump
-                #X = stft(samples, samplerate, windows)
-                plt.pcolormesh(T, X, np.abs(Zxx), vmin=0)
-                #plt.imshow(np.abs(Zxx))
-                plt.title('STFT Magnitude')
-                plt.ylabel('Frequency [Hz]')
-                plt.xlabel('Time [sec]')
-                fig = plt.gcf()
-                #plt.show()
-                fig.savefig('dataset/spectrum/' + name[0] +str(winStart)+'.png', format='png')
+            samp = samples0[winStart:winEnd]
+            #print(samp)
+            X, T, Zxx = stft(samp, samplerate, windows, 20)
+
+            winStart += jump
+            winEnd += jump
+            #X = stft(samples, samplerate, windows)
+            plt.pcolormesh(T, X, np.abs(Zxx), vmin=0)
+            #plt.imshow(np.abs(Zxx))
+            plt.title('STFT Magnitude')
+            plt.ylabel('Frequency [Hz]')
+            plt.xlabel('Time [sec]')
+            fig = plt.gcf()
+            #plt.show()
+            fig.savefig('dataset/spectrum/' + name[0] + "_in" + str(hmImg.get(chord)) + '.png', format='png')
         
         i = i + 1
 
@@ -158,8 +167,8 @@ def main():
 
     #variaveis de entrada
     windows = 'blackman'
-    lengthWindows = 1000        #tamanho da janela em milessegundos
-    hopWindows = 200         #salto da janela em milessegundos
+    lengthWindows = 1000        #tamanho da janela em seg
+    hopWindows = 200         #salto da janela em seg
     
 
     #wavGenerete(mp3Files, wavFiles, chordsFiles)
