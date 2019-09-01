@@ -137,19 +137,17 @@ def spectrumGeneration(wavFiles, windows, lengthWindows, jumpWindows):
             
 
             samp = samples0[winStart:winEnd]
-            #print(samp)
+            
             X, T, Zxx = stft(samp, samplerate, windows, 20)
 
             winStart += jump
             winEnd += jump
-            #X = stft(samples, samplerate, windows)
+
             plt.pcolormesh(T, X, np.abs(Zxx), vmin=0)
-            #plt.imshow(np.abs(Zxx))
             plt.title('STFT Magnitude')
             plt.ylabel('Frequency [Hz]')
             plt.xlabel('Time [sec]')
             fig = plt.gcf()
-            #plt.show()
             fig.savefig('dataset/spectrum/' + name[0] + "_in" + str(hmImg.get(chord)) + '.png', format='png')
         
         i = i + 1
@@ -158,7 +156,7 @@ def spectrumGeneration(wavFiles, windows, lengthWindows, jumpWindows):
 
 
 def main():
-    """Funcao para gerar trechos de mp3"""
+    """Funcao para gerar trechos de mp3 e espectros stft"""
 
     #variaveis referente ao diretorio
     mp3Files = "dataset/mp3/"
@@ -167,21 +165,13 @@ def main():
 
     #variaveis de entrada
     windows = 'blackman'
-    lengthWindows = 1000        #tamanho da janela em seg
-    hopWindows = 200         #salto da janela em seg
+    lengthWindows = 500        #tamanho da janela em seg
+    hopWindows = 100         #salto da janela em seg
     
 
     #wavGenerete(mp3Files, wavFiles, chordsFiles)
 
     spectrumGeneration(wavFiles, windows, lengthWindows, hopWindows)
-    
-    
-    """
-    hm = hashMap.HashMap()
-    hm.put("C7_5", 1)
-    print(hm.get("C7_5"))
-    print(hm.get("D"))"""
-
 
 
 
