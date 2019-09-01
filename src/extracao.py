@@ -116,19 +116,32 @@ def spectrumGeneration(wavFiles, windows, lengthWindows, jumpWindows):
     i = 0
     while(i < len(names)):
         name = names[i].split(".")
-        samplerate, samples = wav.read(wavFiles + names[i])
-        #if(i == 65):
-        samples0 = samples[:, 0]
-        X, T, Zxx = stft(samples0, samplerate, windows, 20)
-        #X = stft(samples, samplerate, windows)
-        plt.pcolormesh(T, X, np.abs(Zxx), vmin=0)
-        #plt.imshow(np.abs(Zxx))
-        plt.title('STFT Magnitude')
-        plt.ylabel('Frequency [Hz]')
-        plt.xlabel('Time [sec]')
-        fig = plt.gcf()
-        #plt.show()
-        fig.savefig('dataset/spectrum/' + name[0] +'.png', format='png')
+        samplerate, samples = wav.read(wavFiles + names[i])     #samplerate tempo de amostragem para 1 seg
+
+        if(i == 1):
+            samples0 = samples[:, 0]        #pega o primeiro canal ou converte de sterio para mono
+            print(samplerate)
+            print(len(samples0))
+            winStart = 0
+            winEnd = samplerate
+            jump = 2000           #salto de 0.2 seg TODO: valor a ser estudado
+            while(winEnd < len(samples0)):
+            
+                samp = samples0[winStart:winEnd]
+                #print(samp)
+                X, T, Zxx = stft(samp, samplerate, windows, 20)
+
+                winStart += jump
+                winEnd += jump
+                #X = stft(samples, samplerate, windows)
+                plt.pcolormesh(T, X, np.abs(Zxx), vmin=0)
+                #plt.imshow(np.abs(Zxx))
+                plt.title('STFT Magnitude')
+                plt.ylabel('Frequency [Hz]')
+                plt.xlabel('Time [sec]')
+                fig = plt.gcf()
+                #plt.show()
+                fig.savefig('dataset/spectrum/' + name[0] +str(winStart)+'.png', format='png')
         
         i = i + 1
 
@@ -149,7 +162,7 @@ def main():
     hopWindows = 200         #salto da janela em milessegundos
     
 
-    wavGenerete(mp3Files, wavFiles, chordsFiles)
+    #wavGenerete(mp3Files, wavFiles, chordsFiles)
 
     spectrumGeneration(wavFiles, windows, lengthWindows, hopWindows)
     
