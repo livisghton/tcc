@@ -3,3 +3,6 @@
 
 #ignora todos os arquivos .wav
 *.wav
+
+#ignora todos os arquivos .wav
+*.png
