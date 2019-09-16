@@ -2,6 +2,12 @@ from pydub import AudioSegment
 import glob, os
 import util.hashmap as hashMap
 import numpy as np
+from librosa.feature import chroma_stft
+import librosa.display as display
+import librosa
+import scipy.io.wavfile as wav
+import matplotlib.pyplot as plt
+
 
 
 #https://gist.github.com/gchavez2/53148cdf7490ad62699385791816b1ea
@@ -53,11 +59,11 @@ def timeToMiliSeconds(start, end):
     return int(startTime), int(endTime)
 
 
-def wavGenerete(mp3Files, wavFiles, chordsFiles):
+def wavGenerete(mp3Files, segmented_audio, chordsFiles):
     """
     Faz a segmentacao dos arquivos de audio com base nos arquivos de acordes.\n
     \t-mp3Files: diretorio com os arquivos no formato .mp3;\n
-    \t-wavFiles: destivo onde ira ser salvo os arquivos segmentados no formato .wav;\n
+    \t-segmented_audio: destivo onde ira ser salvo os arquivos segmentados no formato .wav;\n
     \t-chordsFiles: Arquivo onde esta os mapeamento dos acordes.
     """
 
@@ -90,9 +96,41 @@ def wavGenerete(mp3Files, wavFiles, chordsFiles):
 
             #abre a musica e corta um trecho e salva em wav com o nome da nota
             fragment = sound[startTime:endTime]
-            fragment.export(wavFiles + chord[0] +  "_in" + str(hm.get(chord)) +".wav", format="wav")
+            fragment.export(segmented_audio + chord[0] +  "_in" + str(hm.get(chord)) +".wav", format="wav")
 
         chords.close
+        i = i + 1
+
+
+def chromaGeneration(segmented_audio, chromas):
+    """
+    Converte para o dominio da frequencia com STFT e gera os chromas
+    """
+    
+    actualDirectory = os.getcwd()        #Salva a posicao do diretorio atual
+    names = fileNames(segmented_audio)      #pega todos as musicas do diretorio
+    os.chdir(actualDirectory)       #retorna para o diretorio inicial
+
+    hm = hashMap.HashMap()
+
+    i = 0
+    while(i < len(names)):
+        name = names[i].split('.')[0]
+
+        # samplerate, samples = wav.read(segmented_audio + names[i] )     #samplerate tempo de amostragem para 1 seg
+        audio, samplerate = librosa.load(segmented_audio + names[i], 44100)
+        
+        if(i==2):
+            print(name)
+            chroma = chroma_stft(audio, samplerate)
+            print(chroma)
+            plt.figure(figsize=(10, 4))
+            # specshow(chroma, y_axis='chroma', x_axis='time')
+            display.specshow(chroma, y_axis='chroma', x_axis='time')
+            plt.colorbar()
+            plt.title('Chromagram')
+            plt.tight_layout()
+            plt.show()
         i = i + 1
 
 
@@ -103,7 +141,8 @@ def main():
     #variaveis referente ao diretorio
     mp3Files = "dataset/mp3/"
     chordsFiles = "dataset/chords/"
-    wavFiles = "dataset/segmented_audio/"
+    segmented_audio = "dataset/segmented_audio/"
+    chromas = "dataset/chromas/"
 
     #variaveis de entrada
     windows = 'blackman'
@@ -112,9 +151,10 @@ def main():
     
 
     #fase de segmentacao
-    wavGenerete(mp3Files, wavFiles, chordsFiles)
+    #wavGenerete(mp3Files, segmented_audio, chordsFiles)
 
     #converter para o dominio da frequencia e  generacao dos chromas
+    chromaGeneration(segmented_audio, chromas)
 
 
 
