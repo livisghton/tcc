@@ -101,12 +101,33 @@ def wavGenerete(mp3Files, segmented_audio, chordsFiles):
         chords.close
         i = i + 1
 
+def printChroma(chroma):
+    """
+    Imprime o grafico do groma
+    """
+    plt.figure(figsize=(10, 4))
+    display.specshow(chroma, y_axis='chroma', x_axis='time')
+    plt.colorbar()
+    plt.title('Chromagram')
+    plt.tight_layout()
+    plt.show()
 
-def chromaGeneration(segmented_audio, chromas):
+
+def generationFeature(chroma, winStart, winEnd):
     """
-    Converte para o dominio da frequencia com STFT e gera os chromas
     """
-    
+    i = 0
+
+    while(i < len(chroma)):
+        np.mean(chroma[i][winStart:winEnd])     #calcula a media do trecho da porcao da lista
+        i = i + 1
+
+def chromaGeneration(segmented_audio, arq):
+    """
+    Converte para o dominio da frequencia com STFT e gera a base de dabaBase
+    """
+    windows = 44                    #tamanho da janela para extrair as features do chroma
+
     actualDirectory = os.getcwd()        #Salva a posicao do diretorio atual
     names = fileNames(segmented_audio)      #pega todos as musicas do diretorio
     os.chdir(actualDirectory)       #retorna para o diretorio inicial
@@ -123,14 +144,29 @@ def chromaGeneration(segmented_audio, chromas):
         if(i==2):
             print(name)
             chroma = chroma_stft(audio, samplerate)
-            print(chroma)
-            plt.figure(figsize=(10, 4))
-            # specshow(chroma, y_axis='chroma', x_axis='time')
-            display.specshow(chroma, y_axis='chroma', x_axis='time')
-            plt.colorbar()
-            plt.title('Chromagram')
-            plt.tight_layout()
-            plt.show()
+
+            winStart = 0
+            winEnd = windows        #janela de deslocamento no chroma
+            while(winEnd < len(chroma[0])):
+
+                k = 0
+                while(k < len(chroma)):
+                        mean = np.mean(chroma[k][winStart:winEnd])     #calcula a media do trecho da porcao da lista
+                        arq.write(str(mean))
+                        k = k + 1
+
+                        if(k < 12):
+                            arq.write(str(', '))
+                        else:
+                            arq.write('\n')
+
+                winStart = winEnd
+                winEnd = winEnd + windows           #atualiza o deslocamento do chroma
+            
+            #print(len(chroma))
+            #print(len(chroma[1]))
+            #printChroma(chroma)
+            
         i = i + 1
 
 
@@ -142,7 +178,7 @@ def main():
     mp3Files = "dataset/mp3/"
     chordsFiles = "dataset/chords/"
     segmented_audio = "dataset/segmented_audio/"
-    chromas = "dataset/chromas/"
+    dabaBase = "dataset/bd/bd.txt"
 
     #variaveis de entrada
     windows = 'blackman'
@@ -153,8 +189,11 @@ def main():
     #fase de segmentacao
     #wavGenerete(mp3Files, segmented_audio, chordsFiles)
 
+    arq = open(dabaBase, 'w')
     #converter para o dominio da frequencia e  generacao dos chromas
-    chromaGeneration(segmented_audio, chromas)
+    chromaGeneration(segmented_audio, arq)
+
+    arq.close()
 
 
 
