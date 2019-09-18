@@ -6,6 +6,7 @@ from librosa.feature import chroma_stft
 import librosa.display as display
 import librosa
 import scipy.io.wavfile as wav
+from scipy import signal
 import matplotlib.pyplot as plt
 
 
@@ -113,20 +114,16 @@ def printChroma(chroma):
     plt.show()
 
 
-def generationFeature(chroma, winStart, winEnd):
-    """
-    """
-    i = 0
-
-    while(i < len(chroma)):
-        np.mean(chroma[i][winStart:winEnd])     #calcula a media do trecho da porcao da lista
-        i = i + 1
-
-def chromaGeneration(segmented_audio, arq):
+def chromaGeneration(segmented_audio, arq, windows='hann', lengthWindows=2048, hopWindows=512, lengthWindowsFeature=44):
     """
     Converte para o dominio da frequencia com STFT e gera a base de dabaBase
+    \t-segmented_audio: caminho dos arquivos de audio wav;
+    \t-arq: Caminho onde sera gerado o banco de dados;
+    \t-windows: tipo de janela Ex: 'blackman', 'hamming', por padao sera hann;
+    \t-lengthWindows: tamanho da janela Inteiro. Padrao eh 2048 pontos
+    \t-hopWindows: tamanho do salto das janelas. Padrao eh 512 pontos
+    \t-lengthWindowsFeature: tamanho da janela para extrair o vetor do chroma. Padrao eh 44 pontos
     """
-    windows = 44                    #tamanho da janela para extrair as features do chroma
 
     actualDirectory = os.getcwd()        #Salva a posicao do diretorio atual
     names = fileNames(segmented_audio)      #pega todos as musicas do diretorio
@@ -142,33 +139,32 @@ def chromaGeneration(segmented_audio, arq):
         audio, samplerate = librosa.load(segmented_audio + names[i], 44100)
         
         if(i==2):
-            print(name)
-            chroma = chroma_stft(audio, samplerate)
-
+            chroma = chroma_stft(audio, samplerate, None, np.inf, lengthWindows, hopWindows, None, windows)
+            print(chroma)
+            printChroma(chroma)
             winStart = 0
-            winEnd = windows        #janela de deslocamento no chroma
+            winEnd = lengthWindowsFeature        #janela de deslocamento no chroma
             while(winEnd < len(chroma[0])):
 
                 k = 0
                 while(k < len(chroma)):
                         mean = np.mean(chroma[k][winStart:winEnd])     #calcula a media do trecho da porcao da lista
-                        arq.write(str(mean))
+                        arq.write(str(round(mean,3)))
                         k = k + 1
 
-                        if(k < 12):
-                            arq.write(str(', '))
-                        else:
-                            arq.write('\n')
+                        arq.write(str(' '))
+
+                arq.write(str(name.split('_')[0]))
+                arq.write('\n')
 
                 winStart = winEnd
-                winEnd = winEnd + windows           #atualiza o deslocamento do chroma
+                winEnd = winEnd + lengthWindowsFeature           #atualiza o deslocamento do chroma
             
-            #print(len(chroma))
+            #print(chroma)
             #print(len(chroma[1]))
-            #printChroma(chroma)
+            # printChroma(chroma)
             
         i = i + 1
-
 
 
 def main():
@@ -180,18 +176,20 @@ def main():
     segmented_audio = "dataset/segmented_audio/"
     dabaBase = "dataset/bd/bd.txt"
 
-    #variaveis de entrada
+    #variaveis de entrada da STFT
     windows = 'blackman'
     lengthWindows = 500        #tamanho da janela em seg
     hopWindows = 100         #salto da janela em seg
     
+    #variaveis de configuracao do chroma
+    lengthWindowsFeature = 44
 
     #fase de segmentacao
     #wavGenerete(mp3Files, segmented_audio, chordsFiles)
 
     arq = open(dabaBase, 'w')
     #converter para o dominio da frequencia e  generacao dos chromas
-    chromaGeneration(segmented_audio, arq)
+    chromaGeneration(segmented_audio, arq, windows, lengthWindows, hopWindows, lengthWindowsFeature)
 
     arq.close()
 
