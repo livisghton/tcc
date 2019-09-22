@@ -60,13 +60,36 @@ def timeToMiliSeconds(start, end):
     return int(startTime), int(endTime)
 
 
-def wavGenerete(mp3Files, segmented_audio, chordsFiles):
+def mapChords(countChordsFile):
+    """
+    Recebe um arquivo onde contem a contagem de acordes e a quantidade e retorna um map com esses dois valores
+    Entrada:
+    -countChordsFile: diretorio com o arquivo txt
+
+    Saída:
+    -hm: um map de acorde com um inteiro
+    """
+
+    arq = open(countChordsFile, 'r')
+    hm = hashMap.HashMap()
+
+    for row in arq:
+        count = int(row.split(' ')[0])
+        chord = row.split(' ')[1].split('\n')[0].replace('/', '|')
+        
+        hm.put(chord, count)
+
+    return hm
+     
+
+def wavGenerete(mp3Files, segmented_audio, chordsFiles, mapChords, limit = 0):
     """
     Faz a segmentacao dos arquivos de audio com base nos arquivos de acordes.\n
     \t-mp3Files: diretorio com os arquivos no formato .mp3;\n
     \t-segmented_audio: destivo onde ira ser salvo os arquivos segmentados no formato .wav;\n
     \t-chordsFiles: Arquivo onde esta os mapeamento dos acordes.
     """
+    segmented_audio2 = "dataset/segmented_audio2/"
 
     actualDirectory = os.getcwd()        #Salva a posicao do diretorio atual
     names = fileNames(mp3Files)      #pega todas as musicas do diretorio
@@ -97,7 +120,16 @@ def wavGenerete(mp3Files, segmented_audio, chordsFiles):
 
             #abre a musica e corta um trecho e salva em wav com o nome da nota
             fragment = sound[startTime:endTime]
-            fragment.export(segmented_audio + chord[0] +  "_in" + str(hm.get(chord)) +".wav", format="wav")
+            # fragment.export(segmented_audio + chord +  "_in" + str(hm.get(chord)) +".wav", format="wav")
+
+            chord = chord.replace('/', '|')
+
+            if(mapChords.get(chord) >= limit ):
+                # salva em segmento 1
+                fragment.export(segmented_audio + chord +  "_in" + str(hm.get(chord)) +".wav", format="wav")
+            else:
+                # salva em sagmento 2
+                fragment.export(segmented_audio2 + chord +  "_in" + str(hm.get(chord)) +".wav", format="wav")
 
         chords.close
         i = i + 1
@@ -131,6 +163,8 @@ def chromaGeneration(segmented_audio, arq, windows='hann', lengthWindows=2048, h
 
     hm = hashMap.HashMap()
 
+    arq.write('C C# D D# E F F# G G# A A# B chords\n')    #cabecario do banco de dados
+
     i = 0
     while(i < len(names)):
         name = names[i].split('.')[0]
@@ -138,31 +172,33 @@ def chromaGeneration(segmented_audio, arq, windows='hann', lengthWindows=2048, h
         # samplerate, samples = wav.read(segmented_audio + names[i] )     #samplerate tempo de amostragem para 1 seg
         audio, samplerate = librosa.load(segmented_audio + names[i], 44100)
         
-        if(i==2):
-            chroma = chroma_stft(audio, samplerate, None, np.inf, lengthWindows, hopWindows, None, windows)
-            print(chroma)
-            printChroma(chroma)
-            winStart = 0
-            winEnd = lengthWindowsFeature        #janela de deslocamento no chroma
-            while(winEnd < len(chroma[0])):
+        # if(i==0):
+        #print(name)
+        chroma = chroma_stft(audio, samplerate, None, np.inf, lengthWindows, hopWindows, None, windows)
+        # chroma = chroma_stft(audio, samplerate)
+        #print(chroma)
+        #printChroma(chroma)
+        winStart = 0
+        winEnd = lengthWindowsFeature        #janela de deslocamento no chroma
+        while(winEnd < len(chroma[0])):
 
-                k = 0
-                while(k < len(chroma)):
-                        mean = np.mean(chroma[k][winStart:winEnd])     #calcula a media do trecho da porcao da lista
-                        arq.write(str(round(mean,3)))
-                        k = k + 1
+            k = 0
+            while(k < len(chroma)):
+                    mean = np.mean(chroma[k][winStart:winEnd])     #calcula a media do trecho da porcao da lista
+                    arq.write(str(round(mean,3)))
+                    k = k + 1
 
-                        arq.write(str(' '))
+                    arq.write(str(' '))
 
-                arq.write(str(name.split('_')[0]))
-                arq.write('\n')
+            arq.write(str(name.split('_')[0]))
+            arq.write('\n')
 
-                winStart = winEnd
-                winEnd = winEnd + lengthWindowsFeature           #atualiza o deslocamento do chroma
-            
-            #print(chroma)
-            #print(len(chroma[1]))
-            # printChroma(chroma)
+            winStart = winEnd
+            winEnd = winEnd + lengthWindowsFeature           #atualiza o deslocamento do chroma
+        
+        #print(chroma)
+        #print(len(chroma[1]))
+        # printChroma(chroma)
             
         i = i + 1
 
@@ -174,7 +210,8 @@ def main():
     mp3Files = "dataset/mp3/"
     chordsFiles = "dataset/chords/"
     segmented_audio = "dataset/segmented_audio/"
-    dabaBase = "dataset/bd/bd.txt"
+    dataBase = "dataset/bd/bd.txt"
+    countChords = "dataset/count_chords.txt"
 
     #variaveis de entrada da STFT
     windows = 'blackman'
@@ -182,16 +219,23 @@ def main():
     hopWindows = 100         #salto da janela em seg
     
     #variaveis de configuracao do chroma
-    lengthWindowsFeature = 44
+    lengthWindowsFeature = 11
+
+    #variavel para dividir o banco de dados em dois, ou seja, esta variavel e reponsavel para
+    #limitar o valor minimo de ocorrencia de um acorde
+    limit = 100
+
+    #carrega a lista de todos acordes
+    hm = mapChords(countChords)
 
     #fase de segmentacao
-    #wavGenerete(mp3Files, segmented_audio, chordsFiles)
+    wavGenerete(mp3Files, segmented_audio, chordsFiles, hm, limit)
 
-    arq = open(dabaBase, 'w')
+    #arq = open(dataBase, 'w')
     #converter para o dominio da frequencia e  generacao dos chromas
-    chromaGeneration(segmented_audio, arq, windows, lengthWindows, hopWindows, lengthWindowsFeature)
+    #chromaGeneration(segmented_audio, arq, windows, lengthWindows, hopWindows, lengthWindowsFeature)
 
-    arq.close()
+    #arq.close()
 
 
 

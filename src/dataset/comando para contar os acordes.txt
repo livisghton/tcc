@@ -1,0 +1,2 @@
+lista criada usando o comando:
+cat *.lab | awk '{ print $3 }' | sort | uniq -c | sort -nr > contagem.txt
