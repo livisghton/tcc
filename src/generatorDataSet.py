@@ -163,7 +163,7 @@ def chromaGeneration(segmented_audio, arq, windows='hann', lengthWindows=2048, h
 
     hm = hashMap.HashMap()
 
-    arq.write('C C# D D# E F F# G G# A A# B chords\n')    #cabecario do banco de dados
+    # arq.write('C, C#, D, D#, E, F, F#, G, G#, A, A#, B, chords\n')    #cabecario do banco de dados
 
     i = 0
     while(i < len(names)):
@@ -188,7 +188,7 @@ def chromaGeneration(segmented_audio, arq, windows='hann', lengthWindows=2048, h
                     arq.write(str(round(mean,3)))
                     k = k + 1
 
-                    arq.write(str(' '))
+                    arq.write(str(', '))
 
             arq.write(str(name.split('_')[0]))
             arq.write('\n')
@@ -210,7 +210,7 @@ def main():
     mp3Files = "dataset/mp3/"
     chordsFiles = "dataset/chords/"
     segmented_audio = "dataset/segmented_audio/"
-    dataBase = "dataset/bd/bd.txt"
+    dataBase = "dataset/bd/bd.csv"
     countChords = "dataset/count_chords.txt"
 
     #variaveis de entrada da STFT
@@ -231,11 +231,11 @@ def main():
     #fase de segmentacao
     wavGenerete(mp3Files, segmented_audio, chordsFiles, hm, limit)
 
-    #arq = open(dataBase, 'w')
+    arq = open(dataBase, 'w')
     #converter para o dominio da frequencia e  generacao dos chromas
-    #chromaGeneration(segmented_audio, arq, windows, lengthWindows, hopWindows, lengthWindowsFeature)
+    chromaGeneration(segmented_audio, arq, windows, lengthWindows, hopWindows, lengthWindowsFeature)
 
-    #arq.close()
+    arq.close()
 
 
 
