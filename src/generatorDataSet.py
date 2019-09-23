@@ -8,6 +8,7 @@ import librosa
 import scipy.io.wavfile as wav
 from scipy import signal
 import matplotlib.pyplot as plt
+import time
 
 
 
@@ -99,7 +100,7 @@ def wavGenerete(mp3Files, segmented_audio, chordsFiles, mapChords, limit = 0):
 
     i = 0
     while(i < len(names)):
-        name = names[i].split('.')[0]
+        name = names[i].split('.mp')[0]
         
         sound = AudioSegment.from_mp3(mp3Files+name+'.mp3')
         
@@ -124,7 +125,7 @@ def wavGenerete(mp3Files, segmented_audio, chordsFiles, mapChords, limit = 0):
 
             chord = chord.replace('/', '|')
 
-            if(mapChords.get(chord) >= limit ):
+            if(mapChords.get(chord) and mapChords.get(chord) >= limit ):
                 # salva em segmento 1
                 fragment.export(segmented_audio + chord +  "_in" + str(hm.get(chord)) +".wav", format="wav")
             else:
@@ -225,15 +226,26 @@ def main():
     #limitar o valor minimo de ocorrencia de um acorde
     limit = 100
 
+    inicio = time.time()
+
     #carrega a lista de todos acordes
     hm = mapChords(countChords)
+    fim = time.time()
+    duracao = fim - inicio
+    print("Carregamento do Map concluido..., Duracao:  " + str(duracao))
 
     #fase de segmentacao
-    wavGenerete(mp3Files, segmented_audio, chordsFiles, hm, limit)
+    # wavGenerete(mp3Files, segmented_audio, chordsFiles, hm, limit)
+    # fim = time.time()
+    # duracao = fim - inicio
+    # print("Fase de segmentacao concluida..., Duracao: " + str(duracao))
 
     arq = open(dataBase, 'w')
     #converter para o dominio da frequencia e  generacao dos chromas
     chromaGeneration(segmented_audio, arq, windows, lengthWindows, hopWindows, lengthWindowsFeature)
+    fim = time.time()
+    duracao = fim - inicio
+    print("Geracao do banco de dados finalizado..., Duracao: " + str(duracao))
 
     arq.close()
 

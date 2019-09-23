@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import classification_report,confusion_matrix
 import pandas as pd
-
+import time
 
 def main():
     dataBase = "dataset/bd/bd.csv"
@@ -25,6 +25,7 @@ def main():
     X_train = scaler.transform(X_train)
     X_test = scaler.transform(X_test)
 
+    inicio = time.time()
     #cria um modelo de treinamento
     mlp = MLPClassifier(hidden_layer_sizes=(13,40,13),max_iter=500)
 
@@ -32,6 +33,10 @@ def main():
     mlp.fit(X_train,y_train)
 
     predictions = mlp.predict(X_test)
+    
+    fim = time.time()
+    duracao = fim - inicio
+    print("Fim do treinamento..., Duracao: " + str(duracao)+"\n")
 
     print(confusion_matrix(y_test,predictions))
     print(classification_report(y_test,predictions))

@@ -6,3 +6,6 @@
 
 #ignora todos os arquivos .wav
 *.png
+
+#ignora todos os arquivos .lab
+*.lab
