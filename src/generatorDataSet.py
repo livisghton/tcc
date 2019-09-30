@@ -83,6 +83,33 @@ def mapChords(countChordsFile):
     return hm
      
 
+def normalizeChordNames(name):
+    """
+    converte as notas em Bemois notas em sustenidos ou naturais
+    """
+
+    newName = ""
+
+    if(name.find('Cb') >= 0):
+        newName = 'B' + name.split('b')[1]
+    elif(name.find('Db') >= 0):
+        newName = 'C#' + name.split('b')[1]
+    elif(name.find('Eb') >= 0):
+        newName = 'D#' + name.split('b')[1]
+    elif(name.find('Fb') >= 0):
+        newName = 'E' + name.split('b')[1]
+    elif(name.find('Gb') >= 0):
+        newName = 'F#' + name.split('b')[1]
+    elif(name.find('Ab') >= 0):
+        newName = 'G#' + name.split('b')[1]
+    elif(name.find('Bb') >= 0):
+        newName = 'A#' + name.split('b')[1]
+    else:
+        newName = name
+    
+    return newName
+
+
 def wavGenerete(mp3Files, segmented_audio, chordsFiles, mapChords, limit = 0):
     """
     Faz a segmentacao dos arquivos de audio com base nos arquivos de acordes.\n
@@ -96,11 +123,15 @@ def wavGenerete(mp3Files, segmented_audio, chordsFiles, mapChords, limit = 0):
     names = fileNames(mp3Files)      #pega todas as musicas do diretorio
     os.chdir(actualDirectory)       #retorna para o diretorio inicial
 
+    t = 1/44100                     #tempo de amostragem de um cd
+
     hm = hashMap.HashMap()
 
     i = 0
     while(i < len(names)):
         name = names[i].split('.mp')[0]
+
+        name = normalizeChordNames(name)            #converte notas
         
         sound = AudioSegment.from_mp3(mp3Files+name+'.mp3')
         
@@ -119,18 +150,20 @@ def wavGenerete(mp3Files, segmented_audio, chordsFiles, mapChords, limit = 0):
 
             startTime, endTime = timeToMiliSeconds(float(start), float(end))
 
-            #abre a musica e corta um trecho e salva em wav com o nome da nota
-            fragment = sound[startTime:endTime]
-            # fragment.export(segmented_audio + chord +  "_in" + str(hm.get(chord)) +".wav", format="wav")
+            if(t < (endTime - startTime)):      #necessario para nao gerar segmentos menor do que o tempo de amostragem
 
-            chord = chord.replace('/', '|')
+                #abre a musica e corta um trecho e salva em wav com o nome da nota
+                fragment = sound[startTime:endTime]
+                # fragment.export(segmented_audio + chord +  "_in" + str(hm.get(chord)) +".wav", format="wav")
 
-            if(mapChords.get(chord) and mapChords.get(chord) >= limit ):
-                # salva em segmento 1
-                fragment.export(segmented_audio + chord +  "_in" + str(hm.get(chord)) +".wav", format="wav")
-            else:
-                # salva em sagmento 2
-                fragment.export(segmented_audio2 + chord +  "_in" + str(hm.get(chord)) +".wav", format="wav")
+                chord = chord.replace('/', '|')
+
+                if(mapChords.get(chord) and mapChords.get(chord) >= limit ):
+                    # salva em segmento 1
+                    fragment.export(segmented_audio + chord +  "_in" + str(hm.get(chord)) +".wav", format="wav")
+                else:
+                    # salva em sagmento 2
+                    fragment.export(segmented_audio2 + chord +  "_in" + str(hm.get(chord)) +".wav", format="wav")
 
         chords.close
         i = i + 1
@@ -224,7 +257,7 @@ def main():
 
     #variavel para dividir o banco de dados em dois, ou seja, esta variavel e reponsavel para
     #limitar o valor minimo de ocorrencia de um acorde
-    limit = 100
+    limit = 400
 
     inicio = time.time()
 

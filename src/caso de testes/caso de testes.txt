@@ -1,0 +1,46 @@
+como executar o programa, 
+1- digitar ls e dar enter (vai aparecer README.md src de azul)
+2- Digitar cd src e dar enter 
+3- Digitar ls de novo e enter
+4- vai aparecer caso teste com mlp.py 
+5- digitar python mlp.py
+6- quando terminar acessar files 
+
+mlpout.txt
+mlp = MLPClassifier(hidden_layer_sizes=(13,40,13),max_iter=1000000)
+
+--teste para uma camada:
+
+teste 1:
+mlp = MLPClassifier(hidden_layer_sizes=(61),max_iter=1000)
+
+teste 2:
+mlp = MLPClassifier(hidden_layer_sizes=(61),max_iter=1000000)
+
+teste 3:
+mlp = MLPClassifier(hidden_layer_sizes=(200),max_iter=1000000)
+
+
+
+--teste com duas camadas:
+
+teste 4: 
+mlp = MLPClassifier(hidden_layer_sizes=(61, 61),max_iter=10000)
+
+teste 5:
+mlp = MLPClassifier(hidden_layer_sizes=(61, 61),max_iter=1000000)
+
+teste 6:
+mlp = MLPClassifier(hidden_layer_sizes=(61, 150),max_iter=1000000)
+
+
+
+-- teste com três camadas:
+--teste 7:
+mlp = MLPClassifier(hidden_layer_sizes=(60, 60, 60),max_iter=1000000)
+
+--teste 8:
+mlp = MLPClassifier(hidden_layer_sizes=(60, 120, 60),max_iter=1000000)
+
+--teste 7:
+mlp = MLPClassifier(hidden_layer_sizes=(120, 120, 60),max_iter=1000000)
