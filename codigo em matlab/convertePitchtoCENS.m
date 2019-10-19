@@ -11,7 +11,12 @@ appendFullPath = 0;
 dirLab = 'database/lab/';
 fileLab = '*.lab';
 
-secondName = '_4410';
+%diretorio de saida .txt
+dirOut = 'database/dataset/bd.csv';
+dirOutFilter = 'database/dataset/bdFilter.csv';
+bd = fopen(dirOut, 'w' );
+bdFilter = fopen(dirOutFilter, 'w' );
+
 %Carrega todos os arquivos que tem as features
 %dirFileNames = getAllFiles(dirWav, fileWav, appendFullPath);
 
@@ -20,23 +25,22 @@ secondName = '_4410';
 %carrega todos os arquivos .lab
 dirFileNames = getAllFiles(dirLab, fileLab, appendFullPath);
 
+%filtra a quantidade de acordes
+filePath = 'database\dataset\count_chords.txt';
+numberCut = 20;
+filterchords = getChordsList(filePath, numberCut);
 
 for n=1:size(dirFileNames,1)
-    
     %gera o nomes dos arquivos
     name = strcat('',dirFileNames{n}(1:end-4));
     
-    
     %Gera o path para carregar as features
     nameFeature = strcat(strcat(dirFeature, name),strcat('_pitch_4410',fileFeature(2:end)));
-    nameFeature
     load(nameFeature)
-    
     
     %abrir aquivos lab
     nameMusic = strcat(strcat(dirLab, name), fileLab(2:end));
-    [tempoInicio, tempoFim, nota] = textread(nameMusic,'%f %f %s');
-    
+    [tempoInicio, tempoFim, chords] = textread(nameMusic,'%f %f %s');
     
     %paremetros apara ajustar o choma CENS
     parameter.winLenSmooth = 10;
@@ -50,20 +54,39 @@ for n=1:size(dirFileNames,1)
     parameter.title = sprintf('CENS %d %d chromagram',parameter.winLenSmooth,parameter.downsampSmooth);
     %visualizeChroma(f_CENS,parameter);
     
-    
-    t = 0.0
-    k = 1
-    for i = 1 : size(tempoFim, 1)
-        for j = k : size(f_CENS, 1)
+    t = 0.0;     %reponsavel por contar o tempo na matriz do chroma
+    k = 1;       %index da matriz do chroma
+    for i = 1 : length(tempoFim)
+        for j = k : length(f_CENS)
+            if( round(tempoInicio(i), 1) <= t && round(tempoFim(i), 1) > t && (findChords(filterchords,chords(i))==1) )
 
-            if(round(tempoFim(i), 2) > tround(tempoFim(i), 2) > t)
-                nota(k)
-                t = t + 0.1
-                k = k+1
-                %Salvar em um arquivo .csv
-                %criar um hashMap par evitar notas muito pequena
+                chord = f_CENS(1:end, k).';
+                
+                exemplo = '';
+                for x = 1 : length(chord)
+                    exemplo = strcat(exemplo, strcat(num2str(chord(x)), ','));
+                end
+                exemplo = strcat(exemplo, chords(i));
+                fprintf(bd, '%s\n', exemplo{:});
+                
+            elseif (round(tempoInicio(i), 1) <= t && round(tempoFim(i), 1) > t && findChords(filterchords,chords(i))==0)
+                %armazenar as notas que
+                chordFilter = f_CENS(1:end, k).';
+                
+                exemploFilter = '';
+                for x = 1 : length(chordFilter)
+                    exemploFilter = strcat(exemploFilter, strcat(num2str(chordFilter(x)), ','));
+                end
+                exemploFilter = strcat(exemploFilter, chords(i));
+                fprintf(bdFilter, '%s\n', exemploFilter{:});
+            else 
+                break;
             end
+            t = t + 0.1;
+            k = k+1;
         end
         
     end
 end
+fclose(bd);
+fclose(bdFilter);
