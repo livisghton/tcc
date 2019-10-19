@@ -9,3 +9,6 @@
 
 #ignora todos os arquivos .lab
 *.lab
+
+#iginora todos os arquivos .ini
+*.ini
