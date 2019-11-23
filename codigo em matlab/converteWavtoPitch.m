@@ -12,6 +12,7 @@ dirFileNames = getAllFiles(dirWav, fileWav, appendFullPath);
 
 
 for n=1:size(dirFileNames,1)
+    n
     clear parameter;
     parameter.message = 1;
     
@@ -62,5 +63,5 @@ for n=1:size(dirFileNames,1)
     parameter.featureRate = sideinfo.pitch.featureRate;
     parameter.xlabel = 'Time [Seconds]';
     parameter.ylabel = 'Pitch';
-    visualizePitch(log(5*f_pitch+1),parameter);
+    %visualizePitch(log(5*f_pitch+1),parameter);
 end

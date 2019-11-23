@@ -12,8 +12,8 @@ dirLab = 'database/lab/';
 fileLab = '*.lab';
 
 %diretorio de saida .txt
-dirOut = 'database/dataset/bd.csv';
-dirOutFilter = 'database/dataset/bdFilter.csv';
+dirOut = 'database/dataset/bd_CENS.csv';
+dirOutFilter = 'database/dataset/bdFilter_CENS.csv';
 bd = fopen(dirOut, 'w' );
 bdFilter = fopen(dirOutFilter, 'w' );
 
@@ -31,6 +31,7 @@ numberCut = 20;
 filterchords = getChordsList(filePath, numberCut);
 
 for n=1:size(dirFileNames,1)
+    n
     %gera o nomes dos arquivos
     name = strcat('',dirFileNames{n}(1:end-4));
     
@@ -52,8 +53,9 @@ for n=1:size(dirFileNames,1)
     parameter.featureRate = sideinfo.CENS.featureRate;
     parameter.xlabel = 'Time [Seconds]';
     parameter.title = sprintf('CENS %d %d chromagram',parameter.winLenSmooth,parameter.downsampSmooth);
-    %visualizeChroma(f_CENS,parameter);
-    
+    %if(n==1)
+     %   visualizeChroma(f_CENS,parameter);
+    %end
     t = 0.0;     %reponsavel por contar o tempo na matriz do chroma
     k = 1;       %index da matriz do chroma
     for i = 1 : length(tempoFim)
@@ -90,3 +92,4 @@ for n=1:size(dirFileNames,1)
 end
 fclose(bd);
 fclose(bdFilter);
+fim = 'terminou!!!'

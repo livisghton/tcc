@@ -17,8 +17,8 @@ def readfile(row):
     -features
     '''
 
-    line = row.split(', ')
-    chord = row.split(', ')[12]
+    line = row.split(',')
+    chord = row.split(',')[12]
     
     i=0
     feature = ""
@@ -27,7 +27,6 @@ def readfile(row):
         i = i +1
 
     return chord, feature
-
 
 
 def normalizesDatabase(dataBase, newDataBase, samples):
@@ -59,17 +58,19 @@ def normalizesDatabase(dataBase, newDataBase, samples):
 
 
 def main():
-    dataBase = "dataset/bd/bd.csv"
-    newDataBase = "dataset/bd/bd1.csv"
-    outPut = "mlpOut.txt"
+    dataBase = "dataset/bd/bd_CLP.csv"
+    newDataBase = "dataset/bd/bd_CLP1.csv"
+    outPut = "mlp_CLP.txt"
     arq = open(outPut, 'w')
-    samples = 28416
+    samples = 3500
+
+
 
     normalizesDatabase(dataBase, newDataBase, samples)
 
     name = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "chords"]
 
-    bd = pd.read_csv(dataBase, names=name)
+    bd = pd.read_csv(newDataBase, names=name)
     # print(bd.head())
 
     X = bd.drop("chords", axis = 1)
@@ -77,6 +78,8 @@ def main():
 
     inicio = time.time()
     i = 0
+    duracao = 0 
+
     while(i < 3):
         arq.write("Interacao: " +str(i) + "\n")
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30)
@@ -89,11 +92,12 @@ def main():
         X_test = scaler.transform(X_test)
         
         #cria um modelo de treinamento
-        mlp = MLPClassifier(hidden_layer_sizes=(13,40,13),max_iter=1000000)
+        #mlp = MLPClassifier(hidden_layer_sizes=(13,40,13),max_iter=10000)
+        mlp = MLPClassifier(hidden_layer_sizes=(61),max_iter=1000)
         #colocar os novos casos de testes aqui a baixo
         # mlp = MLPClassifier(hidden_layer_sizes=(120, 120, 180,120, 60),max_iter=1000000)
 
-        print("Iteracao: " + str(i+1) + " de 3")
+        print("Iteracao: " + str(i+1) + " de 30")
         #Treina a rede com os dados
         mlp.fit(X_train,y_train)
 
@@ -107,11 +111,11 @@ def main():
         #print(confusion_matrix(y_test,predictions))
         # print(classification_report(y_test,predictions))
 
-        arq.write(str(confusion_matrix(y_test,predictions)) + "\n")
+        #arq.write(str(confusion_matrix(y_test,predictions)) + "\n")
         arq.write(str(classification_report(y_test,predictions))+ "\n")
         i = i + 1
-    # print("Fim do treinamento..., Duracao: " + str(duracao)+"\n")
-    print("Terminou a execucao!!!")
+    print("Fim do treinamento..., Duracao: " + str(duracao)+"\n")
+    #print("Terminou a execucao!!!")
 
 if __name__ == "__main__":
     main()

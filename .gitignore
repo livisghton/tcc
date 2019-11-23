@@ -9,3 +9,6 @@
 
 #ignora todos os arquivos .lab
 *.lab
+
+#ignora todos os arquivos .lab
+*.mat
