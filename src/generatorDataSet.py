@@ -230,9 +230,10 @@ def chromaGeneration(segmented_audio, arq, windows='hann', lengthWindows=2048, h
             winStart = winEnd
             winEnd = winEnd + lengthWindowsFeature           #atualiza o deslocamento do chroma
         
-        #print(chroma)
-        #print(len(chroma[1]))
-        # printChroma(chroma)
+        if(i==0):
+            print(chroma)
+            print(len(chroma[1]))
+            printChroma(chroma)
             
         i = i + 1
 

@@ -1,4 +1,4 @@
-Teste1: 	camadas escondidas: 1
+Teste1: camadas escondidas: 1
 	N de neuronios: 61
 	iterações: 1000 
 
